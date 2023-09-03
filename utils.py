@@ -8,7 +8,7 @@ def scale_img(image, scale):
     return pygame.transform.scale(image, (w * scale, h * scale))
 
 
-def get_mouse_released(mouse_button):
+def get_mouse_released(mouse_button: int) -> bool:
     """
     Helper function to check if mouse button was released
     1 - Left Mouse Button
