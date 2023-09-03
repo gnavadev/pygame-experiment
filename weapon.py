@@ -1,12 +1,14 @@
 import pygame
 import math
 import constants
+from utils import scale_img
 
 
 class Weapon:
     def __init__(self, image, arrow_image) -> None:
         self.original_image = image
         self.arrow_image = arrow_image
+        self.arrow_scale = 0
         self.angle = 0
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect()
@@ -24,6 +26,26 @@ class Weapon:
             pos[1] - self.rect.centery
         )  # - because pygame cords increase down the screen
         self.angle = math.degrees(math.atan2(y_dist, x_dist))
+
+        # arrow charging
+        if (
+            pygame.mouse.get_pressed()[2]
+            and self.fired == False
+            and (pygame.time.get_ticks() - self.last_shot) >= shot_cooldown
+        ):
+            self.arrow_scale += 0.1
+            event = pygame.event.get(pygame.MOUSEBUTTONUP)
+            if event:
+                if event[0].button == 3:
+                    arrow = Arrow(
+                        scale_img(self.arrow_image, self.arrow_scale),
+                        self.rect.centerx,
+                        self.rect.centery,
+                        self.angle,
+                    )
+                    self.fired = True
+                    self.arrow_scale = 0
+                    self.last_shot = pygame.time.get_ticks()
 
         # get mouseclick
         if (

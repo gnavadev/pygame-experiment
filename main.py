@@ -2,6 +2,7 @@ import pygame
 import constants
 from character import CharacterClass
 from weapon import Weapon
+from utils import scale_img
 
 pygame.init()
 
@@ -17,13 +18,6 @@ moving_left = False
 moving_right = False
 moving_up = False
 moving_down = False
-
-
-# Helper function to scale image
-def scale_img(image, scale):
-    w = image.get_width()
-    h = image.get_height()
-    return pygame.transform.scale(image, (w * scale, h * scale))
 
 
 # load weapons images
