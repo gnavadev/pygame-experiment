@@ -1,7 +1,7 @@
 import pygame
 import math
 import constants
-from utils import scale_img
+from utils import scale_img, get_mouse_released
 
 
 class Weapon:
@@ -34,18 +34,16 @@ class Weapon:
             and (pygame.time.get_ticks() - self.last_shot) >= shot_cooldown
         ):
             self.arrow_scale += 0.1
-            event = pygame.event.get(pygame.MOUSEBUTTONUP)
-            if event:
-                if event[0].button == 3:
-                    arrow = Arrow(
-                        scale_img(self.arrow_image, self.arrow_scale),
-                        self.rect.centerx,
-                        self.rect.centery,
-                        self.angle,
-                    )
-                    self.fired = True
-                    self.arrow_scale = 0
-                    self.last_shot = pygame.time.get_ticks()
+            if get_mouse_released(3):
+                arrow = Arrow(
+                    scale_img(self.arrow_image, self.arrow_scale),
+                    self.rect.centerx,
+                    self.rect.centery,
+                    self.angle,
+                )
+                self.fired = True
+                self.arrow_scale = 0
+                self.last_shot = pygame.time.get_ticks()
 
         # get mouseclick
         if (
