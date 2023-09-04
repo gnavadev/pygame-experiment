@@ -1,6 +1,7 @@
 import pygame
 import math
 import constants
+import random
 from utils import scale_img, get_mouse_released
 
 
@@ -87,7 +88,11 @@ class Arrow(pygame.sprite.Sprite):
         self.dx = math.cos(math.radians(self.angle)) * constants.ARROW_SPEED
         self.dy = -(math.sin(math.radians(self.angle)) * constants.ARROW_SPEED)
 
-    def update(self):
+    def update(self, enemy_list):
+        # RESET VARS
+        damage = 0
+        damage_pos = None
+
         # reposition based on speed
         self.rect.x += self.dx
         self.rect.y += self.dy
@@ -100,6 +105,17 @@ class Arrow(pygame.sprite.Sprite):
             or self.rect.top > constants.SCREEN_HEIGHT
         ):
             self.kill()
+
+        # COLLISION CHECK
+        for enemy in enemy_list:
+            if enemy.rect.colliderect(self.rect) and enemy.alive:
+                damage = 10 + random.randint(-5, 5)
+                damage_pos = enemy.rect
+                enemy.health -= damage
+                self.kill()
+                break
+
+        return damage, damage_pos
 
     def draw(self, surface):
         surface.blit(

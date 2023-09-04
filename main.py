@@ -2,25 +2,29 @@ import pygame
 import constants
 from character import CharacterClass
 from weapon import Weapon
+from damageText import DamageText
 from utils import scale_img
 
+# TODO AFTER LOGIC PART IS FINISHED, REWRITE CODE FOLLOWING GOOD PRACTICES
+
+# UNIVERSAL NEEDS
 pygame.init()
 
-
+# GAME SCREEN
 screen = pygame.display.set_mode((constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
 pygame.display.set_caption("Sample Name")
 
-# create clock to mantain frame rate
+# GAME UNIVERSAL CLOCK
 clock = pygame.time.Clock()
 
-# define player mov var
+# FIXED VARS
 moving_left = False
 moving_right = False
 moving_up = False
 moving_down = False
+font = pygame.font.Font("assets/fonts/AtariClassic.ttf", 20)
+# --------------- START RENDER SECTION-------------------------------------------------------
 
-
-# load weapons images
 bow_image = scale_img(
     pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(),
     constants.WEAPON_SCALE,
@@ -30,18 +34,16 @@ arrow_image = scale_img(
     pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(),
     constants.WEAPON_SCALE,
 )
+# --------------- END RENDER SECTION-------------------------------------------------------
+# --------------- START LOAD SECTION-------------------------------------------------------
 
-
-# load character images
 mob_animations = []
 mob_types = ["elf", "imp", "skeleton", "goblin", "muddy", "tiny_zombie", "big_demon"]
 
 animation_types = ["idle", "run"]
 for mob in mob_types:
-    # load images
     animation_list = []
     for animation in animation_types:
-        # reset temporary list of images
         temp_list = []
         for i in range(4):
             img = pygame.image.load(
@@ -52,65 +54,76 @@ for mob in mob_types:
         animation_list.append(temp_list)
     mob_animations.append(animation_list)
 
-# Create Player
-player = CharacterClass(100, 100, mob_animations, 0)
 
-# create player weapon
+# --------------- END LOAD SECTION-------------------------------------------------------
+# --------------- START CREATION SECTION-------------------------------------------------
+player = CharacterClass(100, 100, 100, mob_animations, 0)
+enemy = CharacterClass(200, 300, 100, mob_animations, 1)
 bow = Weapon(bow_image, arrow_image)
 
+# ENEMY LIST
+enemy_list = []
+enemy_list.append(enemy)
 
-# create sprite groups
+
+# ARROW GROUP
+damage_text_group = pygame.sprite.Group()
 arrow_group = pygame.sprite.Group()
-
-# main game loop
-
+# --------------- START MAIN GAME LOOP -------------------------------------------------------
 run = True
-
 while run:
-    # control frame rate
+    # FRAME RATE CONTROL
     clock.tick(constants.FPS)
-
     screen.fill(constants.BG)
-
-    # calculate player movement before drawing it
+    # --------------- START MOVE SECTION-------------------------------------------------------
     dx = 0
     dy = 0
-
     if moving_right:
         dx = constants.SPEED
-
     if moving_left:
         dx = -constants.SPEED
-
     if moving_up:
         dy = -constants.SPEED
-
     if moving_down:
         dy = constants.SPEED
-
-    # move player
-
     player.move(dx, dy)
-    # update player
+    # --------------- END MOVE SECTION---------------------------------------------------------
+    # --------------- START UPDATE SECTION-----------------------------------------------------
     player.update()
     arrow = bow.update(player)
+
     if arrow:
         arrow_group.add(arrow)
-    for arrow in arrow_group:
-        arrow.update()
 
-    # draw player
+    for arrow in arrow_group:
+        damage, damage_pos = arrow.update(enemy_list)
+        if damage:
+            damage_text = DamageText(
+                damage_pos.centerx, damage_pos.y, damage, constants.RED, font
+            )
+            damage_text_group.add(damage_text)
+
+    damage_text_group.update()
+
+    for enemy in enemy_list:
+        enemy.update()
+    # --------------- END UPDATE SECTION-------------------------------------------------------
+    # --------------- START DRAW SECTION-------------------------------------------------------
+    for enemy in enemy_list:
+        enemy.draw(screen)
+
     player.draw(screen)
     bow.draw(screen)
+    damage_text_group.draw(screen)
+
     for arrow in arrow_group:
         arrow.draw(screen)
-
-    # event handler
+    # --------------- END DRAW SECTION---------------------------------------------------------
+    # --------------- EVENTS SECTION-----------------------------------------------------------
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-
-        # take keyboard input
+        # KEYBOARD INPUTS
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
                 moving_left = True
@@ -120,7 +133,7 @@ while run:
                 moving_up = True
             if event.key == pygame.K_s:
                 moving_down = True
-
+        # RESET MOVEMENT
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 moving_left = False
@@ -131,6 +144,7 @@ while run:
             if event.key == pygame.K_s:
                 moving_down = False
 
+    # UPDATE THE DISPLAY
     pygame.display.update()
 
 pygame.quit()
