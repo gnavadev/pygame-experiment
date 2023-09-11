@@ -6,6 +6,7 @@ import math
 class CharacterClass:
     def __init__(self, x, y, health, mob_animations, character_type) -> None:
         self.character_type = character_type
+        self.score = 0
         self.flip = False
         self.animation_list = mob_animations[character_type]
         self.frame_index = 0
